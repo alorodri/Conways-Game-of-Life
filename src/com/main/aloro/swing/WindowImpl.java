@@ -7,6 +7,7 @@ import java.awt.Graphics;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.Timer;
 
 import com.main.aloro.core.AppConstants;
 import com.main.aloro.core.ChunkManager;
@@ -20,10 +21,6 @@ public class WindowImpl extends Window {
     JFrame frame;
     Canvas canvas;
 
-    // TODO painting threads need to be ahead the window implementation (should be
-    // invoked in Core.java)
-    Thread uiPainter;
-
     public WindowImpl() {
 	Log.write(Log.Constants.SWING, "Swing user interface loaded");
 	frame = new JFrame(String.format(WindowConstants.WINDOW_TITLE_COMPLETE, deltaTime, Grid.get().getDeltaTime(),
@@ -35,41 +32,33 @@ public class WindowImpl extends Window {
 	frame.add(canvas, BorderLayout.CENTER);
 	frame.pack();
 	frame.setLocationRelativeTo(null);
-
-	uiPainter = new Thread(() -> {
-	    paintGrid();
-	});
     }
 
     @Override
     public void showWindow() {
 
 	frame.setVisible(true);
-	uiPainter.start();
+	final Timer timer = new Timer(1000 / AppConstants.TICK_RATE, (a) -> {
+	    paintGrid();
+	});
+
+	timer.start();
 
     }
 
     private int deltaTime = 0;
+    long savedTime = System.nanoTime();
 
     @Override
     protected void paintGrid() {
 
-	long savedTime = System.nanoTime();
-	while (true) {
+	final long time = System.nanoTime();
 
-	    final long time = System.nanoTime();
-	    canvas.repaint();
-	    updateTitle();
+	canvas.repaint();
+	updateTitle();
 
-	    try {
-		Thread.sleep(1000 / AppConstants.TICK_RATE);
-	    } catch (final InterruptedException e) {
-		e.printStackTrace();
-	    }
-
-	    deltaTime = (int) ((time - savedTime) / 1e6);
-	    savedTime = time;
-	}
+	deltaTime = (int) ((time - savedTime) / 1e6);
+	savedTime = time;
     }
 
     private void updateTitle() {
@@ -92,6 +81,9 @@ class Canvas extends JComponent {
 	final int w = ChunkManager.get().getChunkWidth();
 	final int h = ChunkManager.get().getChunkHeight();
 	for (int i = 0; i < l; i++) {
+	    if (!ChunkManager.get().shouldCalculateChunk(i)) {
+		continue;
+	    }
 	    g.setColor(new Color(255, 0, 0, 120));
 	    final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
 	    final int yPos = ChunkManager.get().getYZeroPositionOfChunk(i);

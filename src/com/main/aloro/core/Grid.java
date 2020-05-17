@@ -84,6 +84,7 @@ public class Grid {
 	    synchronized (mutex) {
 		generation++;
 		paintingFirst = !paintingFirst;
+		mutex.notifyAll();
 	    }
 
 	    if (!(((time - savedTime) / 1e6) < 1000 / AppConstants.TICK_RATE)) {
@@ -275,8 +276,10 @@ public class Grid {
     public boolean isAlive(final int x, final int y) {
 	synchronized (mutex) {
 	    if (paintingFirst) {
+		mutex.notifyAll();
 		return firstBuffer[x][y];
 	    } else {
+		mutex.notifyAll();
 		return secondBuffer[x][y];
 	    }
 	}
