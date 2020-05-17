@@ -80,12 +80,9 @@ class Canvas extends JComponent {
 		final int w = ChunkManager.get().getChunkWidth();
 		final int h = ChunkManager.get().getChunkHeight();
 		for (int i = 0; i < l; i++) {
-			if (!ChunkManager.get().shouldCalculateChunk(i)) {
-				continue;
-			}
-			g.setColor(new Color(255, 0, 0, 120));
 			final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
 			final int yPos = ChunkManager.get().getYZeroPositionOfChunk(i);
+			g.setColor(new Color(255, 0, 0, 120));
 			g.drawRect(xPos, yPos, w, h);
 			final String chunkData = (ChunkManager.get().shouldCalculateChunk(i) ? "LOADED " : "") + String.format("[%d]", i);
 			g.drawString(chunkData, xPos + w - (9 + g.getFontMetrics().stringWidth(chunkData)), yPos + h - 10);
@@ -94,14 +91,25 @@ class Canvas extends JComponent {
 
 	@Override
 	protected void paintComponent(final Graphics g) {
-		for (int y = 0; y < WindowConstants.HEIGHT; y++) {
-			for (int x = 0; x < WindowConstants.WIDTH; x++) {
-				if (Grid.get().isAlive(x, y)) {
-					g.setColor(Color.WHITE);
-				} else {
-					g.setColor(Color.BLACK);
+		g.setColor(Color.BLACK);
+		g.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.HEIGHT);
+		for (int i = 0; i < ChunkManager.get().getChunksLength(); i++) {
+			final int initialXPos = ChunkManager.get().getXZeroPositionOfChunk(i);
+			final int initialYPos = ChunkManager.get().getYZeroPositionOfChunk(i);
+
+			if (!ChunkManager.get().shouldCalculateChunk(i)) {
+				continue;
+			}
+
+			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(); y++) {
+				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(); x++) {
+					if (Grid.get().isAlive(x, y)) {
+						g.setColor(Color.WHITE);
+					} else {
+						g.setColor(Color.BLACK);
+					}
+					g.drawRect(x, y, 0, 0);
 				}
-				g.drawRect(x, y, 0, 0);
 			}
 		}
 		paintChunks(g);
