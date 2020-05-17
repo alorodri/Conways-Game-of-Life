@@ -7,9 +7,7 @@ import java.awt.Graphics;
 
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-import javax.swing.Timer;
 
-import com.main.aloro.core.AppConstants;
 import com.main.aloro.core.ChunkManager;
 import com.main.aloro.core.Grid;
 import com.main.aloro.core.Window;
@@ -18,95 +16,95 @@ import com.main.aloro.log.Log;
 
 public class WindowImpl extends Window {
 
-    JFrame frame;
-    Canvas canvas;
+	JFrame frame;
+	Canvas canvas;
 
-    public WindowImpl() {
-	Log.write(Log.Constants.SWING, "Swing user interface loaded");
-	frame = new JFrame(String.format(WindowConstants.WINDOW_TITLE_COMPLETE, deltaTime, Grid.get().getDeltaTime(),
-		Grid.get().getGeneration()));
-	frame.setLayout(new BorderLayout());
-	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public WindowImpl() {
+		Log.write(Log.Constants.SWING, "Swing user interface loaded");
+		frame = new JFrame(
+				String.format(WindowConstants.WINDOW_TITLE_COMPLETE, deltaTime, Grid.get().getDeltaTime(), Grid.get().getGeneration()));
+		frame.setLayout(new BorderLayout());
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	canvas = new Canvas();
-	frame.add(canvas, BorderLayout.CENTER);
-	frame.pack();
-	frame.setLocationRelativeTo(null);
-    }
+		canvas = new Canvas();
+		frame.add(canvas, BorderLayout.CENTER);
+		frame.pack();
+		frame.setLocationRelativeTo(null);
+	}
 
-    @Override
-    public void showWindow() {
+	@Override
+	public void showWindow() {
 
-	frame.setVisible(true);
-	final Timer timer = new Timer(1000 / AppConstants.TICK_RATE, (a) -> {
-	    paintGrid();
-	});
+		frame.setVisible(true);
 
-	timer.start();
+	}
 
-    }
+	public Runnable getPaintGridCallback() {
+		return () -> {
+			paintGrid();
+		};
+	}
 
-    private int deltaTime = 0;
-    long savedTime = System.nanoTime();
+	private int deltaTime = 0;
+	long savedTime = System.nanoTime();
 
-    @Override
-    protected void paintGrid() {
+	@Override
+	protected void paintGrid() {
 
-	final long time = System.nanoTime();
+		final long time = System.nanoTime();
 
-	canvas.repaint();
-	updateTitle();
+		canvas.repaint();
+		updateTitle();
 
-	deltaTime = (int) ((time - savedTime) / 1e6);
-	savedTime = time;
-    }
+		deltaTime = (int) ((time - savedTime) / 1e6);
+		savedTime = time;
+	}
 
-    private void updateTitle() {
-	frame.setTitle(String.format(WindowConstants.WINDOW_TITLE_COMPLETE, deltaTime, Grid.get().getDeltaTime(),
-		Grid.get().getGeneration()));
-    }
+	private void updateTitle() {
+		frame.setTitle(
+				String.format(WindowConstants.WINDOW_TITLE_COMPLETE, deltaTime, Grid.get().getDeltaTime(), Grid.get().getGeneration()));
+	}
 
 }
 
 class Canvas extends JComponent {
 
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    public Canvas() {
-	setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
-    }
-
-    protected void paintChunks(final Graphics g) {
-	final int l = ChunkManager.get().getChunksLength();
-	final int w = ChunkManager.get().getChunkWidth();
-	final int h = ChunkManager.get().getChunkHeight();
-	for (int i = 0; i < l; i++) {
-	    if (!ChunkManager.get().shouldCalculateChunk(i)) {
-		continue;
-	    }
-	    g.setColor(new Color(255, 0, 0, 120));
-	    final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
-	    final int yPos = ChunkManager.get().getYZeroPositionOfChunk(i);
-	    g.drawRect(xPos, yPos, w, h);
-	    final String chunkData = (ChunkManager.get().shouldCalculateChunk(i) ? "LOADED " : "")
-		    + String.format("[%d]", i);
-	    g.drawString(chunkData, xPos + w - (9 + g.getFontMetrics().stringWidth(chunkData)), yPos + h - 10);
+	public Canvas() {
+		setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
 	}
-    }
 
-    @Override
-    protected void paintComponent(final Graphics g) {
-	for (int y = 0; y < WindowConstants.HEIGHT; y++) {
-	    for (int x = 0; x < WindowConstants.WIDTH; x++) {
-		if (Grid.get().isAlive(x, y)) {
-		    g.setColor(Color.WHITE);
-		} else {
-		    g.setColor(Color.BLACK);
+	protected void paintChunks(final Graphics g) {
+		final int l = ChunkManager.get().getChunksLength();
+		final int w = ChunkManager.get().getChunkWidth();
+		final int h = ChunkManager.get().getChunkHeight();
+		for (int i = 0; i < l; i++) {
+			if (!ChunkManager.get().shouldCalculateChunk(i)) {
+				continue;
+			}
+			g.setColor(new Color(255, 0, 0, 120));
+			final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
+			final int yPos = ChunkManager.get().getYZeroPositionOfChunk(i);
+			g.drawRect(xPos, yPos, w, h);
+			final String chunkData = (ChunkManager.get().shouldCalculateChunk(i) ? "LOADED " : "") + String.format("[%d]", i);
+			g.drawString(chunkData, xPos + w - (9 + g.getFontMetrics().stringWidth(chunkData)), yPos + h - 10);
 		}
-		g.drawRect(x, y, 0, 0);
-	    }
 	}
-	paintChunks(g);
-    }
+
+	@Override
+	protected void paintComponent(final Graphics g) {
+		for (int y = 0; y < WindowConstants.HEIGHT; y++) {
+			for (int x = 0; x < WindowConstants.WIDTH; x++) {
+				if (Grid.get().isAlive(x, y)) {
+					g.setColor(Color.WHITE);
+				} else {
+					g.setColor(Color.BLACK);
+				}
+				g.drawRect(x, y, 0, 0);
+			}
+		}
+		paintChunks(g);
+	}
 
 }
