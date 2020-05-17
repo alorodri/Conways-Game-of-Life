@@ -14,7 +14,7 @@ public class Grid {
 	 */
 	private boolean paintingFirst = true;
 
-	private final int generation = 0;
+	private int generation = 0;
 
 	private static Grid instance;
 
@@ -81,6 +81,7 @@ public class Grid {
 			doSimulation();
 
 			paintingFirst = !paintingFirst;
+			generation++;
 			simulationCallback.run();
 
 			if (!(((time - savedTime) / 1e6) < 1000 / AppConstants.TICK_RATE)) {
