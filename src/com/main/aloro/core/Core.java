@@ -4,7 +4,6 @@ import com.main.aloro.log.Log;
 
 public class Core {
 
-	@SuppressWarnings("preview")
 	public static void main(final String[] args) {
 		Class<?> windowImpl;
 		try {
