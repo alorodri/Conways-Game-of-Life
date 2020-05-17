@@ -18,7 +18,7 @@ public class Grid {
 
 	private static Grid instance;
 
-	Runnable simulationCallback;
+	private Runnable simulationCallback;
 
 	public static Grid get() {
 		if (instance == null) {
@@ -61,9 +61,7 @@ public class Grid {
 	}
 
 	public void run() {
-
 		simulationLoop();
-
 	}
 
 	public void setSimulationCallback(final Runnable r) {
@@ -187,7 +185,6 @@ public class Grid {
 				}
 			}
 
-			// TODO need to check too surrounding of next regions
 			if (!chunkHasCells) {
 				if (ChunkManager.get().isGuarded(i)) {
 					ChunkManager.get().removeGuard(i);
