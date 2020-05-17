@@ -30,6 +30,7 @@ public class WindowImpl extends Window {
 		frame.add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
+		frame.setState(JFrame.MAXIMIZED_BOTH);
 	}
 
 	@Override
@@ -105,10 +106,8 @@ class Canvas extends JComponent {
 				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(); x++) {
 					if (Grid.get().isAlive(x, y)) {
 						g.setColor(Color.WHITE);
-					} else {
-						g.setColor(Color.BLACK);
+						g.drawRect(x, y, 0, 0);
 					}
-					g.drawRect(x, y, 0, 0);
 				}
 			}
 		}
