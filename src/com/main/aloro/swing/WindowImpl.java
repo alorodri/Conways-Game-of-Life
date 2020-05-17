@@ -30,7 +30,7 @@ public class WindowImpl extends Window {
 		frame.add(canvas, BorderLayout.CENTER);
 		frame.pack();
 		frame.setLocationRelativeTo(null);
-		frame.setState(JFrame.MAXIMIZED_BOTH);
+		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 	}
 
 	@Override
