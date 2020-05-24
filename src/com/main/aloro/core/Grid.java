@@ -111,31 +111,13 @@ public class Grid {
 		return deadCells;
 	}
 
-	private int deltaTime = 0;
-
 	private void simulationLoop() {
-		long savedTime = System.nanoTime();
-		final long time = System.nanoTime();
 
 		doSimulation();
 
 		paintingFirst = !paintingFirst;
 		generation++;
 
-		if (!(((time - savedTime) / 1e6) < 1000 / AppConstants.TICK_RATE)) {
-			try {
-				Thread.sleep(1000 / AppConstants.TICK_RATE);
-			} catch (final InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-
-		deltaTime = (int) ((time - savedTime) / 1e6);
-		savedTime = time;
-	}
-
-	public int getDeltaTime() {
-		return deltaTime;
 	}
 
 	class ComputingData {
