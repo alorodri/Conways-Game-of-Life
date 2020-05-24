@@ -10,14 +10,12 @@ public class WindowImpl extends Window {
 
 	@Override
 	public void showWindow() {
-		// TODO Auto-generated method stub
-
+		// TODO AWT implementation
 	}
 
 	@Override
 	protected void paintGrid() {
-		// TODO Auto-generated method stub
-
+		// TODO AWT implementation
 	}
 
 }

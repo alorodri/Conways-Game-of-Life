@@ -13,12 +13,11 @@ public class Grid {
 	 * buffer. That's an implementation of a double buffer system.
 	 */
 	private boolean paintingFirst = true;
+	private boolean runningSim = true;
 
 	private int generation = 0;
 
 	private static Grid instance;
-
-	private Runnable simulationCallback;
 
 	public static Grid get() {
 		if (instance == null) {
@@ -30,8 +29,15 @@ public class Grid {
 	private Grid() {
 		for (int y = 0; y < WindowConstants.HEIGHT; y++) {
 			for (int x = 0; x < WindowConstants.WIDTH; x++) {
-				firstBuffer[x][y] = false;
-				secondBuffer[x][y] = false;
+				boolean alive = false;
+				if (AppConstants.RANDOM_GENERATION) {
+					final double rand = Math.random();
+					if (rand > 1 - AppConstants.PERCENT_OF_RANDOM_GENERATION) {
+						alive = true;
+					}
+				}
+				firstBuffer[x][y] = alive;
+				secondBuffer[x][y] = alive;
 			}
 		}
 
@@ -39,24 +45,35 @@ public class Grid {
 		Log.write(Log.Constants.CORE, "Chunk width: " + ChunkManager.get().getChunkWidth() + "px");
 		Log.write(Log.Constants.CORE, "Chunk height: " + ChunkManager.get().getChunkHeight() + "px");
 
-		// *** POSITIONS FOR TESTING *** \\
 		// ACORN
-		firstBuffer[500][500] = true;
-		firstBuffer[501][498] = true;
-		firstBuffer[501][500] = true;
-		firstBuffer[503][499] = true;
-		firstBuffer[504][500] = true;
-		firstBuffer[505][500] = true;
-		firstBuffer[506][500] = true;
+		if (!AppConstants.RANDOM_GENERATION) {
+			firstBuffer[500][500] = true;
+			firstBuffer[501][498] = true;
+			firstBuffer[501][500] = true;
+			firstBuffer[503][499] = true;
+			firstBuffer[504][500] = true;
+			firstBuffer[505][500] = true;
+			firstBuffer[506][500] = true;
 
-		// firstBuffer[2][5] = true;
-		// firstBuffer[3][3] = true;
-		// firstBuffer[3][5] = true;
-		// firstBuffer[5][4] = true;
-		// firstBuffer[6][5] = true;
-		// firstBuffer[7][5] = true;
-		// firstBuffer[8][5] = true;
-		// *** POSITIONS FOR TESTING *** \\
+			firstBuffer[600][500] = true;
+			firstBuffer[601][498] = true;
+			firstBuffer[601][500] = true;
+			firstBuffer[603][499] = true;
+			firstBuffer[604][500] = true;
+			firstBuffer[605][500] = true;
+			firstBuffer[606][500] = true;
+
+			firstBuffer[700][500] = true;
+			firstBuffer[701][498] = true;
+			firstBuffer[701][500] = true;
+			firstBuffer[703][499] = true;
+			firstBuffer[704][500] = true;
+			firstBuffer[705][500] = true;
+			firstBuffer[706][500] = true;
+		} else {
+			Log.write(Log.Constants.CORE,
+					String.format("Generating cells with a %.2f%% of probability", AppConstants.PERCENT_OF_RANDOM_GENERATION));
+		}
 
 	}
 
@@ -64,57 +81,63 @@ public class Grid {
 		simulationLoop();
 	}
 
-	public void setSimulationCallback(final Runnable r) {
-		simulationCallback = r;
+	public void swapSimulationRunningState() {
+		runningSim = !runningSim;
+	}
+
+	public boolean isSimulationRunning() {
+		return runningSim;
 	}
 
 	private int deltaTime = 0;
 
 	private void simulationLoop() {
-		// do things
 		long savedTime = System.nanoTime();
-		while (true) {
+		final long time = System.nanoTime();
 
-			final long time = System.nanoTime();
-			doSimulation();
+		doSimulation();
 
-			paintingFirst = !paintingFirst;
-			generation++;
-			simulationCallback.run();
+		paintingFirst = !paintingFirst;
+		generation++;
 
-			if (!(((time - savedTime) / 1e6) < 1000 / AppConstants.TICK_RATE)) {
-				try {
-					Thread.sleep(1000 / AppConstants.TICK_RATE);
-				} catch (final InterruptedException e) {
-					e.printStackTrace();
-				}
+		if (!(((time - savedTime) / 1e6) < 1000 / AppConstants.TICK_RATE)) {
+			try {
+				Thread.sleep(1000 / AppConstants.TICK_RATE);
+			} catch (final InterruptedException e) {
+				e.printStackTrace();
 			}
-
-			deltaTime = (int) ((time - savedTime) / 1e6);
-			savedTime = time;
-
 		}
+
+		deltaTime = (int) ((time - savedTime) / 1e6);
+		savedTime = time;
 	}
 
 	public int getDeltaTime() {
 		return deltaTime;
 	}
 
-	// TODO refactor cyclomatic complexity (so much braces)
+	class ComputingData {
+		boolean rArray[][];
+		boolean wArray[][];
+		int aliveNeighbours;
+		boolean chunkHasCells;
+		int initialX;
+		int initialY;
+	}
+
 	private void doSimulation() {
 
 		for (int i = 0; i < ChunkManager.get().getChunksLength(); i++) {
-			final int initialXPos = ChunkManager.get().getXZeroPositionOfChunk(i);
-			final int initialYPos = ChunkManager.get().getYZeroPositionOfChunk(i);
 
-			// TODO refactor to not should calculate
-			if (!ChunkManager.get().shouldCalculateChunk(i)) {
+			if (ChunkManager.get().isNotLoaded(i)) {
 				continue;
 			}
 
-			boolean chunkHasCells = false;
-			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(); y++) {
-				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(); x++) {
+			final ComputingData cd = new ComputingData();
+			cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(i);
+			cd.initialY = ChunkManager.get().getYZeroPositionOfChunk(i);
+			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(); y++) {
+				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(); x++) {
 
 					final int alive = countNeighbours(x, y);
 
@@ -122,75 +145,57 @@ public class Grid {
 						continue;
 					}
 
+					cd.aliveNeighbours = alive;
+
+					// swap buffers
 					if (paintingFirst) {
-						// painting first, so we edit the second buffer
-						if (firstBuffer[x][y]) {
-							final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(),
-									ChunkManager.get().getChunkWidth());
-							final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(),
-									ChunkManager.get().getChunkHeight());
-
-							loadChunks(Coordinate.X, shouldLoadX, initialXPos, i);
-							loadChunks(Coordinate.Y, shouldLoadY, initialYPos, i);
-
-							chunkHasCells = true;
-							// alive
-							if (alive == 2 || alive == 3) {
-								// continues alive
-								secondBuffer[x][y] = true;
-							} else {
-								// dead
-								secondBuffer[x][y] = false;
-							}
-						} else {
-							// dead
-							if (alive == 3) {
-								// new cell born
-								secondBuffer[x][y] = true;
-							} else {
-								// continues dead
-								secondBuffer[x][y] = false;
-							}
-						}
+						cd.rArray = firstBuffer;
+						cd.wArray = secondBuffer;
+						loadChunksAndComputeCells(cd, x, y, i);
 					} else {
-						if (secondBuffer[x][y]) {
-							final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(),
-									ChunkManager.get().getChunkWidth());
-							final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(),
-									ChunkManager.get().getChunkHeight());
-
-							loadChunks(Coordinate.X, shouldLoadX, initialXPos, i);
-							loadChunks(Coordinate.Y, shouldLoadY, initialYPos, i);
-
-							chunkHasCells = true;
-							// alive
-							if (alive == 2 || alive == 3) {
-								// continues alive
-								firstBuffer[x][y] = true;
-							} else {
-								// dead
-								firstBuffer[x][y] = false;
-							}
-						} else {
-							// dead
-							if (alive == 3) {
-								// new cell born
-								firstBuffer[x][y] = true;
-							} else {
-								// continues dead
-								firstBuffer[x][y] = false;
-							}
-						}
+						cd.rArray = secondBuffer;
+						cd.wArray = firstBuffer;
+						loadChunksAndComputeCells(cd, x, y, i);
 					}
 				}
 			}
 
-			if (!chunkHasCells) {
+			if (!cd.chunkHasCells) {
 				if (ChunkManager.get().isGuarded(i)) {
 					ChunkManager.get().removeGuard(i);
 				} else {
 					ChunkManager.get().unloadChunk(i);
 				}
+			}
+		}
+	}
+
+	private void loadChunksAndComputeCells(final ComputingData computingData, final int x, final int y, final int i) {
+		if (computingData.rArray[x][y]) {
+			final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(), ChunkManager.get().getChunkWidth());
+			final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(),
+					ChunkManager.get().getChunkHeight());
+
+			loadChunks(Coordinate.X, shouldLoadX, computingData.initialX, i);
+			loadChunks(Coordinate.Y, shouldLoadY, computingData.initialY, i);
+
+			computingData.chunkHasCells = true;
+			// alive
+			if (computingData.aliveNeighbours == 2 || computingData.aliveNeighbours == 3) {
+				// continues alive
+				computingData.wArray[x][y] = true;
+			} else {
+				// dead
+				computingData.wArray[x][y] = false;
+			}
+		} else {
+			// dead
+			if (computingData.aliveNeighbours == 3) {
+				// new cell born
+				computingData.wArray[x][y] = true;
+			} else {
+				// continues dead
+				computingData.wArray[x][y] = false;
 			}
 		}
 	}

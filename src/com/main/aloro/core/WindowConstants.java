@@ -19,7 +19,7 @@ public class WindowConstants {
 	 * Application title + FPS showing
 	 */
 	public final static String WINDOW_TITLE_FPS = WINDOW_TITLE + SPACE + INFO_FPS;
-	public final static String WINDOW_TITLE_COMPLETE = WINDOW_TITLE + SPACE + APPLICATION_VERSION + SPACE + INFO_FPS + SPACE + GENERATION;
+	public final static String WINDOW_TITLE_COMPLETE = WINDOW_TITLE + SPACE + APPLICATION_VERSION + SPACE + GENERATION;
 
 	public final static String AWT_IMPLEMENTATION = "com.main.aloro.awt.WindowImpl";
 	public final static String SWING_IMPLEMENTATION = "com.main.aloro.swing.WindowImpl";

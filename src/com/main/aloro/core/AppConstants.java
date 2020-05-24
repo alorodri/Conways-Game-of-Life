@@ -12,6 +12,9 @@ public class AppConstants {
 	 */
 	public final static int TICK_RATE = 60;
 
-	public final static int CHUNK_SIZE = 120;
+	public final static int CHUNK_SIZE = 100;
+
+	public final static boolean RANDOM_GENERATION = false;
+	public final static double PERCENT_OF_RANDOM_GENERATION = 0.1;
 
 }

@@ -33,8 +33,8 @@ public class ChunkManager {
 		return chunks[0].height;
 	}
 
-	public boolean shouldCalculateChunk(final int id) {
-		return chunks[id].loaded;
+	public boolean isNotLoaded(final int id) {
+		return !chunks[id].loaded;
 	}
 
 	public int getChunksLength() {
