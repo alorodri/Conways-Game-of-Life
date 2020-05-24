@@ -227,7 +227,7 @@ public class Grid {
 				computingData.wArray[x][y] = true;
 			} else {
 				// dead
-				deadCellsCount++;
+				deadCellsCount++; // this will change with chunks cache
 				computingData.wArray[x][y] = false;
 			}
 		} else {
@@ -238,7 +238,7 @@ public class Grid {
 				computingData.wArray[x][y] = true;
 			} else {
 				// continues dead
-				deadCellsCount++;
+				deadCellsCount++; // this will change with chunks cache
 				computingData.wArray[x][y] = false;
 			}
 		}

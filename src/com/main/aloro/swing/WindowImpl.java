@@ -139,6 +139,8 @@ class Canvas extends JComponent {
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
 		if (showData) {
 			drawStringData(g, "Hide data (press Z)");
+			drawStringData(g, "--------------------------");
+			textXPosition = 20;
 			drawStringData(g, String.format("Chunks loaded: %d", Grid.get().getLoadedChunks()));
 			drawStringData(g, String.format("Chunks not loaded: %d", Grid.get().getUnloadedChunks()));
 			drawStringData(g, String.format("Cells alive: %,d", Grid.get().getAliveCells()));
@@ -149,6 +151,8 @@ class Canvas extends JComponent {
 			if (FPSPainter != null) {
 				drawStringData(g, String.format("Current FPS: %d", FPSPainter.get()));
 			}
+			textXPosition = 10;
+			drawStringData(g, "--------------------------");
 		} else {
 			drawStringData(g, "Show data (press Z)");
 		}
