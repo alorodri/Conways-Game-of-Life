@@ -19,6 +19,12 @@ public class Grid {
 
 	private static Grid instance;
 
+	// stats
+	private int aliveCells = 0;
+	private int deadCells = 0;
+	private int loadedChunks = 0;
+	private int unloadedChunks = 0;
+
 	public static Grid get() {
 		if (instance == null) {
 			instance = new Grid();
@@ -89,6 +95,22 @@ public class Grid {
 		return runningSim;
 	}
 
+	public int getAliveCells() {
+		return aliveCells;
+	}
+
+	public int getLoadedChunks() {
+		return loadedChunks;
+	}
+
+	public int getUnloadedChunks() {
+		return unloadedChunks;
+	}
+
+	public int getDeadCells() {
+		return deadCells;
+	}
+
 	private int deltaTime = 0;
 
 	private void simulationLoop() {
@@ -125,13 +147,25 @@ public class Grid {
 		int initialY;
 	}
 
+	int aliveCellsCount = 0;
+	int deadCellsCount = 0;
+	int loadedChunksCount = 0;
+	int unloadedChunksCount = 0;
 	private void doSimulation() {
+
+		aliveCellsCount = 0;
+		deadCellsCount = 0;
+		loadedChunksCount = 0;
+		unloadedChunksCount = 0;
 
 		for (int i = 0; i < ChunkManager.get().getChunksLength(); i++) {
 
 			if (ChunkManager.get().isNotLoaded(i)) {
+				unloadedChunksCount++;
 				continue;
 			}
+
+			loadedChunksCount++;
 
 			final ComputingData cd = new ComputingData();
 			cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(i);
@@ -168,6 +202,12 @@ public class Grid {
 				}
 			}
 		}
+
+		aliveCells = aliveCellsCount;
+		deadCells = deadCellsCount;
+		loadedChunks = loadedChunksCount;
+		unloadedChunks = unloadedChunksCount;
+
 	}
 
 	private void loadChunksAndComputeCells(final ComputingData computingData, final int x, final int y, final int i) {
@@ -183,18 +223,22 @@ public class Grid {
 			// alive
 			if (computingData.aliveNeighbours == 2 || computingData.aliveNeighbours == 3) {
 				// continues alive
+				aliveCellsCount++;
 				computingData.wArray[x][y] = true;
 			} else {
 				// dead
+				deadCellsCount++;
 				computingData.wArray[x][y] = false;
 			}
 		} else {
 			// dead
 			if (computingData.aliveNeighbours == 3) {
 				// new cell born
+				aliveCellsCount++;
 				computingData.wArray[x][y] = true;
 			} else {
 				// continues dead
+				deadCellsCount++;
 				computingData.wArray[x][y] = false;
 			}
 		}

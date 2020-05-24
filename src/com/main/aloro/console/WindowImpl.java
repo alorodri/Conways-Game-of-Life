@@ -1,5 +1,7 @@
 package com.main.aloro.console;
 
+import java.util.function.Supplier;
+
 import com.main.aloro.core.AppConstants;
 import com.main.aloro.core.Grid;
 import com.main.aloro.core.Window;
@@ -47,6 +49,12 @@ public class WindowImpl extends Window {
 				e.printStackTrace();
 			}
 		}
+
+	}
+
+	@Override
+	public void paintFPS(Supplier<Integer> r) {
+		// TODO Auto-generated method stub
 
 	}
 

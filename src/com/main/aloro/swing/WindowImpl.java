@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.util.function.Supplier;
 
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -92,6 +93,11 @@ public class WindowImpl extends Window {
 		frame.setTitle(String.format(WindowConstants.WINDOW_TITLE_COMPLETE, Grid.get().getGeneration()));
 	}
 
+	@Override
+	public void paintFPS(Supplier<Integer> supplier) {
+		canvas.setFPSPainter(supplier);
+	}
+
 }
 
 class Canvas extends JComponent {
@@ -100,8 +106,14 @@ class Canvas extends JComponent {
 	private boolean showData = false;
 	private boolean showChunks = false;
 
+	private Supplier<Integer> FPSPainter;
+
 	public Canvas() {
 		setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
+	}
+
+	protected void setFPSPainter(Supplier<Integer> r) {
+		FPSPainter = r;
 	}
 
 	private void paintChunks(final Graphics g) {
@@ -127,11 +139,16 @@ class Canvas extends JComponent {
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
 		if (showData) {
 			drawStringData(g, "Hide data (press Z)");
-			drawStringData(g, "Chunks loaded: %d");
-			drawStringData(g, "Chunks not loaded: %d");
-			drawStringData(g, "Cells alive: %d");
-			drawStringData(g, "Cells dead: %d");
-			drawStringData(g, "Current FPS: %d");
+			drawStringData(g, String.format("Chunks loaded: %d", Grid.get().getLoadedChunks()));
+			drawStringData(g, String.format("Chunks not loaded: %d", Grid.get().getUnloadedChunks()));
+			drawStringData(g, String.format("Cells alive: %,d", Grid.get().getAliveCells()));
+			drawStringData(g, String.format("Cells dead: %,d", Grid.get()
+					.getDeadCells()
+					+ Grid.get().getUnloadedChunks() * ChunkManager.get().getChunkWidth() * ChunkManager.get().getChunkHeight()));
+			drawStringData(g, String.format("Generation: %,d", Grid.get().getGeneration()));
+			if (FPSPainter != null) {
+				drawStringData(g, String.format("Current FPS: %d", FPSPainter.get()));
+			}
 		} else {
 			drawStringData(g, "Show data (press Z)");
 		}
