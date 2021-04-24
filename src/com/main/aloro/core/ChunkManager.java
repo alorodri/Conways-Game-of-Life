@@ -11,8 +11,8 @@ public class ChunkManager {
 	private final Chunk[] chunks;
 
 	int numberOfChunksInRow = -1;
-	int widthDiff;
-	int heightDiff;
+	final int widthDiff;
+	final int heightDiff;
 
 	private ChunkManager(final Integer size) {
 

@@ -24,8 +24,8 @@ import com.main.aloro.log.Log;
 
 public class WindowImpl extends Window {
 
-	JFrame frame;
-	Canvas canvas;
+	final JFrame frame;
+	final Canvas canvas;
 	private boolean fullscreenFlag = false;
 
 	public WindowImpl() {
