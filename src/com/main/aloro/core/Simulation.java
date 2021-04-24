@@ -7,7 +7,7 @@ public class Simulation {
 
 	private int fpsValue = 0;
 	public void run(final Grid grid, final Window render) {
-		int deltaTime = 0;
+		int deltaTime;
 		long savedTime = System.nanoTime();
 
 		render.paintFPS(() -> fpsValue );

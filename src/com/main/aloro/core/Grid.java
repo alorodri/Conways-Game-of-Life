@@ -120,7 +120,7 @@ public class Grid {
 
 	}
 
-	class ComputingData {
+	static class ComputingData {
 		boolean[][] rArray;
 		boolean[][] wArray;
 		int aliveNeighbours;
