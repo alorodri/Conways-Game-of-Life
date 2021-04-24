@@ -8,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
+import java.io.Serial;
 import java.util.function.Supplier;
 
 import javax.swing.Action;
@@ -94,7 +95,9 @@ public class WindowImpl extends Window {
 
 class Canvas extends JComponent {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
+
 	private boolean showData = false;
 	private boolean showChunks = false;
 
