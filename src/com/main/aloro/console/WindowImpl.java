@@ -41,11 +41,6 @@ public class WindowImpl extends Window {
 			}
 			System.out.println("------------------------------");
 
-			try {
-				Thread.sleep(1000 / AppConstants.TICK_RATE);
-			} catch (final InterruptedException e) {
-				e.printStackTrace();
-			}
 		}
 
 	}
