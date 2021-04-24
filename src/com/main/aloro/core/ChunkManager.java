@@ -2,27 +2,47 @@ package com.main.aloro.core;
 
 import com.main.aloro.log.Log;
 
+import java.awt.*;
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class ChunkManager {
 
 	private static ChunkManager instance;
 	private final Chunk[] chunks;
 
-	private ChunkManager(final int size) {
+	private ChunkManager(final Integer size) {
+
+		Log.write(Log.Constants.CHUNK_MANAGER, "Trying to load " + size + " chunks");
+
+		AtomicInteger mutsize = new AtomicInteger(size);
 
 		// we check if canvas can be divided by size, if not, we initialize chunk array
-		// with another apropiated size
-		// TODO impl algorithm to find apropiated size
+		// with another appropriated size
+		final Dimension d = findAppropriatedSize(mutsize);
+		final int width = d.width;
+		final int height = d.height;
 
-		Log.write(Log.Constants.CHUNK_MANAGER, size + " chunks loaded.");
-
-		chunks = new Chunk[size];
+		chunks = new Chunk[mutsize.get()];
 		for (int i = 0; i < chunks.length; i++) {
-			int width = (int) Math.sqrt(size);
-			int height = width;
-			width = WindowConstants.WIDTH / width;
-			height = WindowConstants.HEIGHT / height;
 			chunks[i] = new Chunk(i, width, height);
 		}
+	}
+
+	private Dimension findAppropriatedSize(AtomicInteger size) {
+
+		final int horizontalChunks = (int) Math.sqrt(size.get());
+		final int verticalChunks = horizontalChunks;
+
+		if (size.get() != horizontalChunks * horizontalChunks) {
+			size.set(horizontalChunks * horizontalChunks);
+		}
+
+		final int width = WindowConstants.WIDTH / horizontalChunks;
+		final int height = WindowConstants.HEIGHT / verticalChunks;
+
+		Log.write(Log.Constants.CHUNK_MANAGER, "Calculated number of chunks to load: " + size);
+
+		return new Dimension(width, height);
 	}
 
 	public int getChunkWidth() {
@@ -78,7 +98,7 @@ public class ChunkManager {
 		return getXZeroPositionOfChunk(id) + x;
 	}
 
-	public int getAbsokuteYPosition(final int id, final int y) {
+	public int getAbsoluteYPosition(final int id, final int y) {
 		return getYZeroPositionOfChunk(id) + y;
 	}
 
@@ -93,7 +113,7 @@ public class ChunkManager {
 		if (instance == null) {
 			instance = new ChunkManager(size);
 		} else {
-			throw new RuntimeException("Trying to re-instanciate initialized ChunkManager");
+			throw new RuntimeException("Trying to re-instantiate initialized ChunkManager");
 		}
 		return instance;
 	}
