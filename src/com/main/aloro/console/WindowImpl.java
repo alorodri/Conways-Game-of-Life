@@ -13,9 +13,7 @@ public class WindowImpl extends Window {
 
 	public WindowImpl() {
 		System.out.println("Loading console implementation of window.");
-		uiPainter = new Thread(() -> {
-			paintGrid();
-		});
+		uiPainter = new Thread(this::paintGrid);
 	}
 
 	@Override

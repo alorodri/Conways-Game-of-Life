@@ -11,9 +11,7 @@ public class Simulation {
 
 	public void run(final Grid grid, final Window render) {
 
-		render.paintFPS(() -> {
-			return fpsValue;
-		});
+		render.paintFPS(() -> fpsValue );
 
 		while (true) {
 
