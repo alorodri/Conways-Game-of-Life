@@ -46,21 +46,13 @@ public class WindowImpl extends Window {
 
 	public void setUpBindings() {
 
-		bindKeyToFcn(KeyStroke.getKeyStroke('m'), a -> {
-			swapFullScreen();
-		});
+		bindKeyToFcn(KeyStroke.getKeyStroke('m'), a -> swapFullScreen() );
 
-		bindKeyToFcn(KeyStroke.getKeyStroke('p'), a -> {
-			Grid.get().swapSimulationRunningState();
-		});
+		bindKeyToFcn(KeyStroke.getKeyStroke('p'), a -> Grid.get().swapSimulationRunningState() );
 
-		bindKeyToFcn(KeyStroke.getKeyStroke('z'), a -> {
-			canvas.swapShowingData();
-		});
+		bindKeyToFcn(KeyStroke.getKeyStroke('z'), a -> canvas.swapShowingData() );
 
-		bindKeyToFcn(KeyStroke.getKeyStroke('c'), a -> {
-			canvas.swapShowingChunks();
-		});
+		bindKeyToFcn(KeyStroke.getKeyStroke('c'), a -> canvas.swapShowingChunks() );
 
 	}
 
