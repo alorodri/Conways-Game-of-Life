@@ -1,9 +1,11 @@
 package com.main.aloro.core;
 
+import java.awt.*;
+
 public class WindowConstants {
 
-	public final static int WIDTH = 1920;
-	public final static int HEIGHT = 1080;
+	public final static int WIDTH = Toolkit.getDefaultToolkit().getScreenSize().width;
+	public final static int HEIGHT = Toolkit.getDefaultToolkit().getScreenSize().height;
 
 	public final static char SPACE = ' ';
 

@@ -189,13 +189,6 @@ class Canvas extends JComponent {
 
 			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(); y++) {
 				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(); x++) {
-
-					// FIXME Index 1080 out of bounds for length 1080
-					if (y == 1080) {
-						Log.write(Log.Constants.SWING,
-								String.format("initialYPos: %d, chunk height: %d", initialYPos, ChunkManager.get().getChunkHeight()));
-					}
-
 					if (Grid.get().isAlive(x, y)) {
 						g.setColor(Color.WHITE);
 						g.drawRect(x, y, 0, 0);
