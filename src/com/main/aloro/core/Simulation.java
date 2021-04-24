@@ -5,11 +5,10 @@ public class Simulation {
 	public Simulation() {
 	}
 
-	private int deltaTime = 0;
-	private long savedTime = System.nanoTime();
 	private int fpsValue = 0;
-
 	public void run(final Grid grid, final Window render) {
+		int deltaTime = 0;
+		long savedTime = System.nanoTime();
 
 		render.paintFPS(() -> fpsValue );
 
