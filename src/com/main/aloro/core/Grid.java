@@ -4,8 +4,8 @@ import com.main.aloro.log.Log;
 
 public class Grid {
 
-	private final boolean firstBuffer[][] = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
-	private final boolean secondBuffer[][] = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
+	private final boolean[][] firstBuffer = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
+	private final boolean[][] secondBuffer = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
 
 	/**
 	 * That flag indicates whether the buffered matrix was sent to UI or not. If was
@@ -121,8 +121,8 @@ public class Grid {
 	}
 
 	class ComputingData {
-		boolean rArray[][];
-		boolean wArray[][];
+		boolean[][] rArray;
+		boolean[][] wArray;
 		int aliveNeighbours;
 		boolean chunkHasCells;
 		int initialX;
@@ -167,12 +167,11 @@ public class Grid {
 					if (paintingFirst) {
 						cd.rArray = firstBuffer;
 						cd.wArray = secondBuffer;
-						loadChunksAndComputeCells(cd, x, y, i);
 					} else {
 						cd.rArray = secondBuffer;
 						cd.wArray = firstBuffer;
-						loadChunksAndComputeCells(cd, x, y, i);
 					}
+					loadChunksAndComputeCells(cd, x, y, i);
 				}
 			}
 
