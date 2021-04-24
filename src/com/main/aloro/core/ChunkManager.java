@@ -11,8 +11,8 @@ public class ChunkManager {
 	private final Chunk[] chunks;
 
 	int numberOfChunksInRow = -1;
-	int widthDiff;
-	int heightDiff;
+	int widthDiff = 0;
+	int heightDiff = 0;
 
 	private ChunkManager(final Integer size) {
 
@@ -101,11 +101,11 @@ public class ChunkManager {
 	}
 
 	public int getNumberOfHorizontalChunks() {
-		return WindowConstants.WIDTH / getChunkWidth(0);
+		return (int) Math.round(WindowConstants.WIDTH / getChunkWidth(0));
 	}
 
 	public int getNumberOfVerticalChunks() {
-		return WindowConstants.HEIGHT / getChunkHeight(0);
+		return (int) Math.round(WindowConstants.HEIGHT / getChunkHeight(0));
 	}
 
 	public int getXZeroPositionOfChunk(final int id) {
