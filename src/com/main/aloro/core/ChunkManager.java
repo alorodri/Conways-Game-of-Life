@@ -22,33 +22,61 @@ public class ChunkManager {
 		final int width = d.width;
 		final int height = d.height;
 
+		// should sqrt be a int number because we've checked it on findAppropriatedSize()
+		int numberOfChunksInRow = (int) Math.sqrt(mutsize.get());
+		final int widthDiff = WindowConstants.WIDTH % numberOfChunksInRow;
+		final int heightDiff = WindowConstants.HEIGHT % numberOfChunksInRow;
+
 		chunks = new Chunk[mutsize.get()];
 		for (int i = 0; i < chunks.length; i++) {
-			chunks[i] = new Chunk(i, width, height);
+			if (i == numberOfChunksInRow -1) {
+				chunks[i] = new Chunk(i, width + widthDiff, height);
+			} else if (i == mutsize.get() - 1) {
+				// last chunk
+				chunks[i] = new Chunk(i, width + widthDiff, height + heightDiff);
+			}
+			else {
+				chunks[i] = new Chunk(i, width, height);
+			}
 		}
 	}
 
 	private Dimension findAppropriatedSize(AtomicInteger size) {
 
-		final int horizontalChunks = (int) Math.sqrt(size.get());
-		final int verticalChunks = horizontalChunks;
+		int numberOfChunksInRow = (int) Math.round(Math.sqrt(size.get()));
 
-		if (size.get() != horizontalChunks * horizontalChunks) {
-			size.set(horizontalChunks * horizontalChunks);
+		if (size.get() != numberOfChunksInRow * numberOfChunksInRow) {
+			size.set(numberOfChunksInRow * numberOfChunksInRow);
 		}
 
-		final int width = WindowConstants.WIDTH / horizontalChunks;
-		final int height = WindowConstants.HEIGHT / verticalChunks;
+		final int width = WindowConstants.WIDTH / numberOfChunksInRow;
+		final int height = WindowConstants.HEIGHT / numberOfChunksInRow;
 
 		Log.write(Log.Constants.CHUNK_MANAGER, "Calculated number of chunks to load: " + size);
 
 		return new Dimension(width, height);
 	}
 
+	/**
+	 * Get chunks width.
+	 * @deprecated
+	 * This method is deprecated. We should take width of each chunk, not getting chunk[0] to get
+	 * the size of "all" chunks, because that's not valid when we're going to paint them.
+	 * @return chunk width.
+	 */
+	@Deprecated
 	public int getChunkWidth() {
 		return chunks[0].width;
 	}
 
+	/**
+	 * Get chunks height.
+	 * @deprecated
+	 * This method is deprecated. We should take height of each chunk, not getting chunk[0] to get
+	 * the size of "all" chunks, because that's not valid when we're going to paint them.
+	 * @return chunk width.
+	 */
+	@Deprecated
 	public int getChunkHeight() {
 		return chunks[0].height;
 	}
