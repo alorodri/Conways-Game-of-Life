@@ -29,14 +29,15 @@ public class ChunkManager {
 
 		chunks = new Chunk[mutsize.get()];
 		for (int i = 0; i < chunks.length; i++) {
-			if (i == numberOfChunksInRow -1) {
+			if (i % numberOfChunksInRow == numberOfChunksInRow - 1) {
 				chunks[i] = new Chunk(i, width + widthDiff, height);
-			} else if (i == mutsize.get() - 1) {
-				// last chunk
-				chunks[i] = new Chunk(i, width + widthDiff, height + heightDiff);
-			}
-			else {
+			} else {
 				chunks[i] = new Chunk(i, width, height);
+			}
+
+			if (i == mutsize.get() - 1) {
+				// last chunk
+				chunks[i] = new Chunk(i, width, height + heightDiff);
 			}
 		}
 	}
@@ -95,11 +96,11 @@ public class ChunkManager {
 	}
 
 	public int getNumberOfHorizontalChunks() {
-		return WindowConstants.WIDTH / getChunkWidth(0);
+		return (int) Math.round(WindowConstants.WIDTH / getChunkWidth(0));
 	}
 
 	public int getNumberOfVerticalChunks() {
-		return WindowConstants.HEIGHT / getChunkHeight(0);
+		return (int) Math.round(WindowConstants.HEIGHT / getChunkHeight(0));
 	}
 
 	public int getXZeroPositionOfChunk(final int id) {
