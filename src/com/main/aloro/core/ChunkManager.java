@@ -43,7 +43,7 @@ public class ChunkManager {
 				// last row of chunks
 				finalHeight = height + heightDiff;
 			}
-			chunks[i] = new Chunk(i, finalWidth, finalHeight);
+			chunks[i] = new Chunk(finalWidth, finalHeight);
 		}
 	}
 
