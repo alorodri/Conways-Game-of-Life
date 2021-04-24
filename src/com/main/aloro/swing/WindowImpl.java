@@ -114,7 +114,7 @@ class Canvas extends JComponent {
 	private void paintChunks(final Graphics g) {
 		final int l = ChunkManager.get().getChunksLength();
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
-		for (int i = 0; i < l; i++) {
+		for (int i = 0; i < l; ++i) {
 			final int w = ChunkManager.get().getChunkWidth(i);
 			final int h = ChunkManager.get().getChunkHeight(i);
 			final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
@@ -174,7 +174,7 @@ class Canvas extends JComponent {
 	protected void paintComponent(final Graphics g) {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.HEIGHT);
-		for (int i = 0; i < ChunkManager.get().getChunksLength(); i++) {
+		for (int i = 0; i < ChunkManager.get().getChunksLength(); ++i) {
 			final int initialXPos = ChunkManager.get().getXZeroPositionOfChunk(i);
 			final int initialYPos = ChunkManager.get().getYZeroPositionOfChunk(i);
 
@@ -182,8 +182,8 @@ class Canvas extends JComponent {
 				continue;
 			}
 
-			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(i); y++) {
-				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(i); x++) {
+			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(i); ++y) {
+				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(i); ++x) {
 					if (Grid.get().isAlive(x, y)) {
 						g.setColor(Color.WHITE);
 						g.drawRect(x, y, 0, 0);

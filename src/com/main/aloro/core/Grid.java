@@ -33,8 +33,8 @@ public class Grid {
 	}
 
 	private Grid() {
-		for (int y = 0; y < WindowConstants.HEIGHT; y++) {
-			for (int x = 0; x < WindowConstants.WIDTH; x++) {
+		for (int y = 0; y < WindowConstants.HEIGHT; ++y) {
+			for (int x = 0; x < WindowConstants.WIDTH; ++x) {
 				boolean alive = false;
 				if (AppConstants.RANDOM_GENERATION) {
 					final double rand = Math.random();
@@ -140,7 +140,7 @@ public class Grid {
 		loadedChunksCount = 0;
 		unloadedChunksCount = 0;
 
-		for (int i = 0; i < ChunkManager.get().getChunksLength(); i++) {
+		for (int i = 0; i < ChunkManager.get().getChunksLength(); ++i) {
 
 			if (ChunkManager.get().isNotLoaded(i)) {
 				unloadedChunksCount++;
@@ -152,8 +152,8 @@ public class Grid {
 			final ComputingData cd = new ComputingData();
 			cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(i);
 			cd.initialY = ChunkManager.get().getYZeroPositionOfChunk(i);
-			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(i); y++) {
-				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(i); x++) {
+			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(i); ++y) {
+				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(i); ++x) {
 
 					final int alive = countNeighbours(x, y);
 
@@ -264,8 +264,8 @@ public class Grid {
 
 	private int countNeighbours(final int xPos, final int yPos) {
 		int aliveCount = 0;
-		for (int y = yPos - 1; y < yPos + 2; y++) {
-			for (int x = xPos - 1; x < xPos + 2; x++) {
+		for (int y = yPos - 1; y < yPos + 2; ++y) {
+			for (int x = xPos - 1; x < xPos + 2; ++x) {
 
 				if (y == yPos && x == xPos) {
 					continue;
