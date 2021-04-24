@@ -10,6 +10,10 @@ public class ChunkManager {
 	private static ChunkManager instance;
 	private final Chunk[] chunks;
 
+	int numberOfChunksInRow = -1;
+	int widthDiff = 0;
+	int heightDiff = 0;
+
 	private ChunkManager(final Integer size) {
 
 		Log.write(Log.Constants.CHUNK_MANAGER, "Trying to load " + size + " chunks");
@@ -23,28 +27,29 @@ public class ChunkManager {
 		final int height = d.height;
 
 		// should sqrt be a int number because we've checked it on findAppropriatedSize()
-		int numberOfChunksInRow = (int) Math.sqrt(mutsize.get());
-		final int widthDiff = WindowConstants.WIDTH % numberOfChunksInRow;
-		final int heightDiff = WindowConstants.HEIGHT % numberOfChunksInRow;
+		widthDiff = WindowConstants.WIDTH % numberOfChunksInRow;
+		heightDiff = WindowConstants.HEIGHT % numberOfChunksInRow;
 
 		chunks = new Chunk[mutsize.get()];
 		for (int i = 0; i < chunks.length; i++) {
+			int finalWidth = width;
+			int finalHeight = height;
+
 			if (i % numberOfChunksInRow == numberOfChunksInRow - 1) {
-				chunks[i] = new Chunk(i, width + widthDiff, height);
-			} else {
-				chunks[i] = new Chunk(i, width, height);
+				finalWidth = width + widthDiff;
 			}
 
-			if (i == mutsize.get() - 1) {
-				// last chunk
-				chunks[i] = new Chunk(i, width, height + heightDiff);
+			if (i / numberOfChunksInRow == numberOfChunksInRow - 1) {
+				// last row of chunks
+				finalHeight = height + heightDiff;
 			}
+			chunks[i] = new Chunk(i, finalWidth, finalHeight);
 		}
 	}
 
 	private Dimension findAppropriatedSize(AtomicInteger size) {
 
-		int numberOfChunksInRow = (int) Math.round(Math.sqrt(size.get()));
+		numberOfChunksInRow = (int) Math.round(Math.sqrt(size.get()));
 
 		if (size.get() != numberOfChunksInRow * numberOfChunksInRow) {
 			size.set(numberOfChunksInRow * numberOfChunksInRow);
@@ -104,11 +109,17 @@ public class ChunkManager {
 	}
 
 	public int getXZeroPositionOfChunk(final int id) {
-		return (id * getChunkWidth(id)) % (WindowConstants.WIDTH);
+		final int yn = id / numberOfChunksInRow;
+		if (id == numberOfChunksInRow) {
+			return (id * getChunkWidth(0) + widthDiff) % (WindowConstants.WIDTH);
+		} else if (yn >= 1) {
+			return (id * getChunkWidth(0) + widthDiff * yn) % (WindowConstants.WIDTH);
+		}
+		return (id * getChunkWidth(0)) % (WindowConstants.WIDTH);
 	}
 
 	public int getYZeroPositionOfChunk(final int id) {
-		return id / (WindowConstants.WIDTH / getChunkWidth(id)) * getChunkHeight(id);
+		return id / (WindowConstants.WIDTH / getChunkWidth(0)) * getChunkHeight(0);
 	}
 
 	public int getAbsoluteXPosition(final int id, final int x) {
