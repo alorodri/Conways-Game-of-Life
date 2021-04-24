@@ -113,10 +113,10 @@ class Canvas extends JComponent {
 
 	private void paintChunks(final Graphics g) {
 		final int l = ChunkManager.get().getChunksLength();
-		final int w = ChunkManager.get().getChunkWidth();
-		final int h = ChunkManager.get().getChunkHeight();
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
 		for (int i = 0; i < l; i++) {
+			final int w = ChunkManager.get().getChunkWidth(i);
+			final int h = ChunkManager.get().getChunkHeight(i);
 			final int xPos = ChunkManager.get().getXZeroPositionOfChunk(i);
 			final int yPos = ChunkManager.get().getYZeroPositionOfChunk(i);
 			g.setColor(new Color(255, 0, 0, 120));
@@ -141,7 +141,7 @@ class Canvas extends JComponent {
 			drawStringData(g, String.format("Cells alive: %,d", Grid.get().getAliveCells()));
 			drawStringData(g, String.format("Cells dead: %,d", Grid.get()
 					.getDeadCells()
-					+ Grid.get().getUnloadedChunks() * ChunkManager.get().getChunkWidth() * ChunkManager.get().getChunkHeight()));
+					+ Grid.get().getUnloadedChunks() * ChunkManager.get().getChunkWidth(0) * ChunkManager.get().getChunkHeight(0)));
 			drawStringData(g, String.format("Generation: %,d", Grid.get().getGeneration()));
 			if (FPSPainter != null) {
 				drawStringData(g, String.format("Current FPS: %d", FPSPainter.get()));
@@ -182,8 +182,8 @@ class Canvas extends JComponent {
 				continue;
 			}
 
-			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(); y++) {
-				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(); x++) {
+			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(i); y++) {
+				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(i); x++) {
 					if (Grid.get().isAlive(x, y)) {
 						g.setColor(Color.WHITE);
 						g.drawRect(x, y, 0, 0);

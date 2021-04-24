@@ -48,8 +48,8 @@ public class Grid {
 		}
 
 		ChunkManager.initialize(AppConstants.CHUNK_SIZE);
-		Log.write(Log.Constants.CORE, "Chunk width: " + ChunkManager.get().getChunkWidth() + "px");
-		Log.write(Log.Constants.CORE, "Chunk height: " + ChunkManager.get().getChunkHeight() + "px");
+		Log.write(Log.Constants.CORE, "Chunk width: " + ChunkManager.get().getChunkWidth(0) + "px");
+		Log.write(Log.Constants.CORE, "Chunk height: " + ChunkManager.get().getChunkHeight(0) + "px");
 
 		// ACORN
 		if (!AppConstants.RANDOM_GENERATION) {
@@ -152,8 +152,8 @@ public class Grid {
 			final ComputingData cd = new ComputingData();
 			cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(i);
 			cd.initialY = ChunkManager.get().getYZeroPositionOfChunk(i);
-			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(); y++) {
-				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(); x++) {
+			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(i); y++) {
+				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(i); x++) {
 
 					final int alive = countNeighbours(x, y);
 
@@ -193,9 +193,9 @@ public class Grid {
 
 	private void loadChunksAndComputeCells(final ComputingData computingData, final int x, final int y, final int i) {
 		if (computingData.rArray[x][y]) {
-			final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(), ChunkManager.get().getChunkWidth());
-			final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(),
-					ChunkManager.get().getChunkHeight());
+			final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(i), ChunkManager.get().getChunkWidth(i));
+			final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(i),
+					ChunkManager.get().getChunkHeight(i));
 
 			loadChunks(Coordinate.X, shouldLoadX, computingData.initialX, i);
 			loadChunks(Coordinate.Y, shouldLoadY, computingData.initialY, i);
@@ -249,14 +249,14 @@ public class Grid {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - 1);
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkWidth() * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkWidth(chunkId) * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + 1);
 			}
 		} else if (coord == Coordinate.Y) {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - ChunkManager.get().getNumberOfHorizontalChunks());
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkHeight() * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkHeight(chunkId) * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + ChunkManager.get().getNumberOfHorizontalChunks());
 			}
 		}

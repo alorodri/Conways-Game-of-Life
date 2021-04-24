@@ -57,28 +57,16 @@ public class ChunkManager {
 		return new Dimension(width, height);
 	}
 
-	/**
-	 * Get chunks width.
-	 * @deprecated
-	 * This method is deprecated. We should take width of each chunk, not getting chunk[0] to get
-	 * the size of "all" chunks, because that's not valid when we're going to paint them.
-	 * @return chunk width.
-	 */
-	@Deprecated
-	public int getChunkWidth() {
-		return chunks[0].width;
+	public Chunk getChunk(final int chunkId) {
+		return chunks[chunkId];
 	}
 
-	/**
-	 * Get chunks height.
-	 * @deprecated
-	 * This method is deprecated. We should take height of each chunk, not getting chunk[0] to get
-	 * the size of "all" chunks, because that's not valid when we're going to paint them.
-	 * @return chunk width.
-	 */
-	@Deprecated
-	public int getChunkHeight() {
-		return chunks[0].height;
+	public int getChunkWidth(final int chunkId) {
+		return chunks[chunkId].width;
+	}
+
+	public int getChunkHeight(final int chunkId) {
+		return chunks[chunkId].height;
 	}
 
 	public boolean isNotLoaded(final int id) {
@@ -107,19 +95,19 @@ public class ChunkManager {
 	}
 
 	public int getNumberOfHorizontalChunks() {
-		return WindowConstants.WIDTH / getChunkWidth();
+		return WindowConstants.WIDTH / getChunkWidth(0);
 	}
 
 	public int getNumberOfVerticalChunks() {
-		return WindowConstants.HEIGHT / getChunkHeight();
+		return WindowConstants.HEIGHT / getChunkHeight(0);
 	}
 
 	public int getXZeroPositionOfChunk(final int id) {
-		return (id * getChunkWidth()) % (WindowConstants.WIDTH);
+		return (id * getChunkWidth(id)) % (WindowConstants.WIDTH);
 	}
 
 	public int getYZeroPositionOfChunk(final int id) {
-		return id / (WindowConstants.WIDTH / getChunkWidth()) * getChunkHeight();
+		return id / (WindowConstants.WIDTH / getChunkWidth(id)) * getChunkHeight(id);
 	}
 
 	public int getAbsoluteXPosition(final int id, final int x) {
