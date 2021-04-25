@@ -88,6 +88,12 @@ public class ChunkManager {
 	}
 
 	public void loadChunk(final int id) {
+
+		if (id >= chunks.length) {
+			Log.write(Log.Constants.CHUNK_MANAGER, "Registered attempt to load non-existent chunk with id: " + id);
+			return;
+		}
+
 		chunks[id].loaded = true;
 		chunks[id].guard = true;
 	}
