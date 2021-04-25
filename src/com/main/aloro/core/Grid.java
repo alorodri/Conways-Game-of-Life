@@ -249,14 +249,14 @@ public class Grid {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - 1);
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkWidth(chunkId) * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkWidth(0) * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + 1);
 			}
 		} else if (coord == Coordinate.Y) {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - ChunkManager.get().getNumberOfHorizontalChunks());
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkHeight(chunkId) * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkHeight(0) * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + ChunkManager.get().getNumberOfHorizontalChunks());
 			}
 		}
