@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
@@ -165,7 +167,7 @@ class Canvas extends JComponent {
 		FPSPainter = r;
 	}
 
-	private void paintChunks(final Graphics g) {
+	private void paintChunks(final Graphics2D g) {
 		final int l = ChunkManager.get().getChunksLength();
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
 		for (int i = 0; i < l; ++i) {
@@ -182,7 +184,7 @@ class Canvas extends JComponent {
 
 	int textYPosition = 0;
 
-	private void paintData(final Graphics g) {
+	private void paintData(final Graphics2D g) {
 		textYPosition = 15;
 		g.setColor(new Color(255, 255, 255, 200));
 		g.setFont(new Font("Crisp", Font.PLAIN, 12));
@@ -211,7 +213,7 @@ class Canvas extends JComponent {
 
 	int textXPosition = 10;
 
-	private void drawStringData(final Graphics g, final String text) {
+	private void drawStringData(final Graphics2D g, final String text) {
 		g.drawString(text, textXPosition, textYPosition);
 		textYPosition += 15;
 	}
@@ -227,9 +229,11 @@ class Canvas extends JComponent {
 	@Override
 	protected void paintComponent(final Graphics g) {
 		// --- Apply pan and zoom ---
-		Graphics g2 = g.create();
+		Graphics2D g2 = (Graphics2D) g;
 		g2.translate(panX, panY);
-		((Graphics)g2).scale(zoom, zoom);
+		AffineTransform t = new AffineTransform();
+		t.scale(zoom, zoom);
+		g2.setTransform(t);
 		g2.setColor(Color.BLACK);
 		g2.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.HEIGHT);
 		for (int i = 0; i < ChunkManager.get().getChunksLength(); ++i) {
