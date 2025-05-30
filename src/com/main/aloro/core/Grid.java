@@ -1,9 +1,16 @@
 package com.main.aloro.core;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.main.aloro.log.Log;
 
 public class Grid {
 
+	private ExecutorService executorService;
 	private final boolean[][] firstBuffer = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
 	private final boolean[][] secondBuffer = new boolean[WindowConstants.WIDTH][WindowConstants.HEIGHT];
 
@@ -20,10 +27,10 @@ public class Grid {
 	private static Grid instance;
 
 	// stats
-	private int aliveCells = 0;
-	private int deadCells = 0;
-	private int loadedChunks = 0;
-	private int unloadedChunks = 0;
+	private AtomicInteger aliveCells = new AtomicInteger(0);
+	private AtomicInteger deadCells = new AtomicInteger(0);
+	private AtomicInteger loadedChunks = new AtomicInteger(0);
+	private AtomicInteger unloadedChunks = new AtomicInteger(0);
 
 	public static Grid get() {
 		if (instance == null) {
@@ -33,6 +40,7 @@ public class Grid {
 	}
 
 	private Grid() {
+		executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 		for (int y = 0; y < WindowConstants.HEIGHT; ++y) {
 			for (int x = 0; x < WindowConstants.WIDTH; ++x) {
 				boolean alive = false;
@@ -96,19 +104,19 @@ public class Grid {
 	}
 
 	public int getAliveCells() {
-		return aliveCells;
+		return aliveCells.get();
 	}
 
 	public int getLoadedChunks() {
-		return loadedChunks;
+		return loadedChunks.get();
 	}
 
 	public int getUnloadedChunks() {
-		return unloadedChunks;
+		return unloadedChunks.get();
 	}
 
 	public int getDeadCells() {
-		return deadCells;
+		return deadCells.get();
 	}
 
 	private void simulationLoop() {
@@ -129,97 +137,126 @@ public class Grid {
 		int initialY;
 	}
 
-	int aliveCellsCount = 0;
-	int deadCellsCount = 0;
-	int loadedChunksCount = 0;
-	int unloadedChunksCount = 0;
+	// Using AtomicInteger for thread-safe counters during parallel processing
+	private AtomicInteger aliveCellsCountInSim = new AtomicInteger(0);
+	private AtomicInteger deadCellsCountInSim = new AtomicInteger(0);
+	private AtomicInteger loadedChunksCountInSim = new AtomicInteger(0);
+	private AtomicInteger unloadedChunksCountInSim = new AtomicInteger(0);
+
 	private void doSimulation() {
 
-		aliveCellsCount = 0;
-		deadCellsCount = 0;
-		loadedChunksCount = 0;
-		unloadedChunksCount = 0;
+		aliveCellsCountInSim.set(0);
+		deadCellsCountInSim.set(0);
+		loadedChunksCountInSim.set(0);
+		unloadedChunksCountInSim.set(0);
 
-		for (int i = 0; i < ChunkManager.get().getChunksLength(); ++i) {
+		final int numChunks = ChunkManager.get().getChunksLength();
+		if (numChunks == 0) { // Handle case with no chunks
+			aliveCells.set(0);
+			deadCells.set(0);
+			loadedChunks.set(0);
+			unloadedChunks.set(0);
+			return;
+		}
+		final CountDownLatch latch = new CountDownLatch(numChunks);
 
-			if (ChunkManager.get().isNotLoaded(i)) {
-				unloadedChunksCount++;
-				continue;
-			}
-
-			loadedChunksCount++;
-
-			final ComputingData cd = new ComputingData();
-			cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(i);
-			cd.initialY = ChunkManager.get().getYZeroPositionOfChunk(i);
-			for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(i); ++y) {
-				for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(i); ++x) {
-
-					final int alive = countNeighbours(x, y);
-
-					if (x >= WindowConstants.WIDTH || y >= WindowConstants.HEIGHT) {
-						continue;
-					}
-
-					cd.aliveNeighbours = alive;
-
-					// swap buffers
-					if (paintingFirst) {
-						cd.rArray = firstBuffer;
-						cd.wArray = secondBuffer;
-					} else {
-						cd.rArray = secondBuffer;
-						cd.wArray = firstBuffer;
-					}
-					loadChunksAndComputeCells(cd, x, y, i);
+		for (int i = 0; i < numChunks; ++i) {
+			final int chunkId = i;
+			executorService.submit(() -> {
+				try {
+					processSingleChunk(chunkId);
+				} finally {
+					latch.countDown();
 				}
-			}
-
-			if (!cd.chunkHasCells) {
-				if (ChunkManager.get().isGuarded(i)) {
-					ChunkManager.get().removeGuard(i);
-				} else {
-					ChunkManager.get().unloadChunk(i);
-				}
-			}
+			});
 		}
 
-		aliveCells = aliveCellsCount;
-		deadCells = deadCellsCount;
-		loadedChunks = loadedChunksCount;
-		unloadedChunks = unloadedChunksCount;
+		try {
+			latch.await();
+		} catch (InterruptedException e) {
+			Log.write(Log.Constants.ERROR, "Simulation interrupted during latch await: " + e.getMessage());
+			Thread.currentThread().interrupt(); // Restore interrupted status
+		}
+
+		aliveCells.set(aliveCellsCountInSim.get());
+		deadCells.set(deadCellsCountInSim.get());
+		loadedChunks.set(loadedChunksCountInSim.get());
+		unloadedChunks.set(unloadedChunksCountInSim.get());
 
 	}
 
-	private void loadChunksAndComputeCells(final ComputingData computingData, final int x, final int y, final int i) {
-		if (computingData.rArray[x][y]) {
-			final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(i), ChunkManager.get().getChunkWidth(i));
-			final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(i),
-					ChunkManager.get().getChunkHeight(i));
+	private void processSingleChunk(int chunkId) {
+		if (ChunkManager.get().isNotLoaded(chunkId)) {
+			unloadedChunksCountInSim.incrementAndGet();
+			return;
+		}
 
-			loadChunks(Coordinate.X, shouldLoadX, computingData.initialX, i);
-			loadChunks(Coordinate.Y, shouldLoadY, computingData.initialY, i);
+		loadedChunksCountInSim.incrementAndGet();
+
+		final ComputingData cd = new ComputingData();
+		cd.initialX = ChunkManager.get().getXZeroPositionOfChunk(chunkId);
+		cd.initialY = ChunkManager.get().getYZeroPositionOfChunk(chunkId);
+		for (int y = cd.initialY; y < cd.initialY + ChunkManager.get().getChunkHeight(chunkId); ++y) {
+			for (int x = cd.initialX; x < cd.initialX + ChunkManager.get().getChunkWidth(chunkId); ++x) {
+
+				final int alive = countNeighbours(x, y);
+
+				if (x >= WindowConstants.WIDTH || y >= WindowConstants.HEIGHT) {
+					continue;
+				}
+
+				cd.aliveNeighbours = alive;
+
+				// swap buffers
+				if (paintingFirst) {
+					cd.rArray = firstBuffer;
+					cd.wArray = secondBuffer;
+				} else {
+					cd.rArray = secondBuffer;
+					cd.wArray = firstBuffer;
+				}
+				loadChunksAndComputeCells(cd, x, y, chunkId);
+			}
+		}
+
+		if (!cd.chunkHasCells) {
+			if (ChunkManager.get().isGuarded(chunkId)) {
+				ChunkManager.get().removeGuard(chunkId);
+			} else {
+				ChunkManager.get().unloadChunk(chunkId);
+			}
+		}
+	}
+
+	private void loadChunksAndComputeCells(final ComputingData computingData, final int x, final int y, final int chunkId) {
+		if (computingData.rArray[x][y]) {
+			final Limit shouldLoadX = shouldLoadNeighbourChunk(x % ChunkManager.get().getChunkWidth(chunkId), ChunkManager.get().getChunkWidth(chunkId));
+			final Limit shouldLoadY = shouldLoadNeighbourChunk(y % ChunkManager.get().getChunkHeight(chunkId),
+					ChunkManager.get().getChunkHeight(chunkId));
+
+			loadChunks(Coordinate.X, shouldLoadX, computingData.initialX, chunkId);
+			loadChunks(Coordinate.Y, shouldLoadY, computingData.initialY, chunkId);
 
 			computingData.chunkHasCells = true;
 			// alive
 			if (computingData.aliveNeighbours == 2 || computingData.aliveNeighbours == 3) {
 				// continues alive
-				aliveCellsCount++;
+				aliveCellsCountInSim.incrementAndGet();
 				computingData.wArray[x][y] = true;
 			} else {
 				// dead
-				deadCellsCount++; // this will change with chunks cache
+				deadCellsCountInSim.incrementAndGet(); // this will change with chunks cache
 				computingData.wArray[x][y] = false;
 			}
 		} else {
 			// dead
 			if (computingData.aliveNeighbours == 3) {
 				// new cell born
-				aliveCellsCount++;
+				aliveCellsCountInSim.incrementAndGet();
 				computingData.wArray[x][y] = true;
 			} else {
 				// continues dead
-				deadCellsCount++; // this will change with chunks cache
+				deadCellsCountInSim.incrementAndGet(); // this will change with chunks cache
 				computingData.wArray[x][y] = false;
 			}
 		}
@@ -249,14 +286,14 @@ public class Grid {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - 1);
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkWidth(0) * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkWidth(chunkId) * (ChunkManager.get().getNumberOfHorizontalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + 1);
 			}
 		} else if (coord == Coordinate.Y) {
 			if (limit == Limit.MIN && initialPixel != 0) {
 				ChunkManager.get().loadChunk(chunkId - ChunkManager.get().getNumberOfHorizontalChunks());
 			} else if (limit == Limit.MAX
-					&& initialPixel != ChunkManager.get().getChunkHeight(0) * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
+					&& initialPixel != ChunkManager.get().getChunkHeight(chunkId) * (ChunkManager.get().getNumberOfVerticalChunks() - 1)) {
 				ChunkManager.get().loadChunk(chunkId + ChunkManager.get().getNumberOfHorizontalChunks());
 			}
 		}
@@ -303,6 +340,28 @@ public class Grid {
 			return firstBuffer[x][y];
 		} else {
 			return secondBuffer[x][y];
+		}
+	}
+
+	public void shutdownExecutor() {
+		if (executorService != null && !executorService.isShutdown()) {
+			executorService.shutdown(); // Disable new tasks from being submitted
+			try {
+				// Wait a while for existing tasks to terminate
+				if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+					executorService.shutdownNow(); // Cancel currently executing tasks
+					// Wait a while for tasks to respond to being cancelled
+					if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+						Log.write(Log.Constants.ERROR, "ExecutorService did not terminate.");
+					}
+				}
+			} catch (InterruptedException ie) {
+				// (Re-)Cancel if current thread also interrupted
+				executorService.shutdownNow();
+				// Preserve interrupt status
+				Thread.currentThread().interrupt();
+				Log.write(Log.Constants.CORE, "ExecutorService shutdown interrupted.");
+			}
 		}
 	}
 
