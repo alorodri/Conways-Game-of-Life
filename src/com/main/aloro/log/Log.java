@@ -20,5 +20,6 @@ public class Log {
 		public static final String WINDOW = "WINDOW";
 		public static final String CHUNK_MANAGER = "CHUNK_MANAGER";
 		public static final String CHUNK_REGION = "CHUNK_REGION_%d";
+		public static final String ERROR = "ERROR";
 	}
 }

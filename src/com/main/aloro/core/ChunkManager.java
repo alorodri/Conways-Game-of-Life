@@ -83,11 +83,11 @@ public class ChunkManager {
 		return chunks.length;
 	}
 
-	public void unloadChunk(final int id) {
+	public synchronized void unloadChunk(final int id) {
 		chunks[id].loaded = false;
 	}
 
-	public void loadChunk(final int id) {
+	public synchronized void loadChunk(final int id) {
 
 		if (id >= chunks.length) {
 			Log.write(Log.Constants.CHUNK_MANAGER, "Registered attempt to load non-existent chunk with id: " + id);
@@ -102,7 +102,7 @@ public class ChunkManager {
 		return chunks[id].guard;
 	}
 
-	public void removeGuard(final int id) {
+	public synchronized void removeGuard(final int id) {
 		chunks[id].guard = false;
 	}
 

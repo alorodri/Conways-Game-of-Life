@@ -10,11 +10,11 @@ public class AppConstants {
 	 * 0 to pause the simulation. User can increase the tick rate manually inside
 	 * the simulation.
 	 */
-	public final static int TICK_RATE = 60;
+	public final static int TICK_RATE = 500;
 
 	public final static int CHUNK_SIZE = 100;
 
-	public final static boolean RANDOM_GENERATION = false;
+	public final static boolean RANDOM_GENERATION = true;
 	public final static double PERCENT_OF_RANDOM_GENERATION = 0.1;
 
 }
