@@ -103,8 +103,62 @@ class Canvas extends JComponent {
 
 	private Supplier<Integer> FPSPainter;
 
+	// --- New fields for zoom and pan ---
+	private double zoom = 1.0;
+	private int panX = 0, panY = 0;
+	private int lastDragX = 0, lastDragY = 0;
+	private boolean dragging = false;
+
 	public Canvas() {
 		setPreferredSize(new Dimension(WindowConstants.WIDTH, WindowConstants.HEIGHT));
+
+		// --- Mouse listeners for zoom, pan, and double-click ---
+		addMouseWheelListener(e -> {
+			if (e.getPreciseWheelRotation() < 0) {
+				zoom *= 1.1;
+			} else {
+				zoom /= 1.1;
+			}
+			repaint();
+		});
+
+		addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mousePressed(java.awt.event.MouseEvent e) {
+				if (e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+					dragging = true;
+					lastDragX = e.getX();
+					lastDragY = e.getY();
+				}
+			}
+			@Override
+			public void mouseReleased(java.awt.event.MouseEvent e) {
+				dragging = false;
+			}
+			@Override
+			public void mouseClicked(java.awt.event.MouseEvent e) {
+				if (e.getClickCount() == 2 && e.getButton() == java.awt.event.MouseEvent.BUTTON1) {
+					// Reset pan and zoom to center at (0,0)
+					zoom = 1.0;
+					panX = 0;
+					panY = 0;
+					repaint();
+				}
+			}
+		});
+
+		addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+			@Override
+			public void mouseDragged(java.awt.event.MouseEvent e) {
+				if (dragging) {
+					panX += e.getX() - lastDragX;
+					panY += e.getY() - lastDragY;
+					lastDragX = e.getX();
+					lastDragY = e.getY();
+					repaint();
+				}
+			}
+		});
 	}
 
 	protected void setFPSPainter(Supplier<Integer> r) {
@@ -172,8 +226,12 @@ class Canvas extends JComponent {
 
 	@Override
 	protected void paintComponent(final Graphics g) {
-		g.setColor(Color.BLACK);
-		g.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.HEIGHT);
+		// --- Apply pan and zoom ---
+		Graphics g2 = g.create();
+		g2.translate(panX, panY);
+		((Graphics)g2).scale(zoom, zoom);
+		g2.setColor(Color.BLACK);
+		g2.fillRect(0, 0, WindowConstants.WIDTH, WindowConstants.HEIGHT);
 		for (int i = 0; i < ChunkManager.get().getChunksLength(); ++i) {
 			final int initialXPos = ChunkManager.get().getXZeroPositionOfChunk(i);
 			final int initialYPos = ChunkManager.get().getYZeroPositionOfChunk(i);
@@ -185,16 +243,17 @@ class Canvas extends JComponent {
 			for (int y = initialYPos; y < initialYPos + ChunkManager.get().getChunkHeight(i); ++y) {
 				for (int x = initialXPos; x < initialXPos + ChunkManager.get().getChunkWidth(i); ++x) {
 					if (Grid.get().isAlive(x, y)) {
-						g.setColor(Color.WHITE);
-						g.drawRect(x, y, 0, 0);
+						g2.setColor(Color.WHITE);
+						g2.drawRect(x, y, 0, 0);
 					}
 				}
 			}
 		}
 		if (showChunks) {
-			paintChunks(g);
+			paintChunks(g2);
 		}
-		paintData(g);
+		paintData(g2);
+		g2.dispose();
 	}
 
 }
